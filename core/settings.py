@@ -88,18 +88,18 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
-    # }
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'hrplatform_db',  # le nom de  base de données
-        'USER': 'postgres',  #  nom d'utilisateur PostgreSQL
-        'PASSWORD': 'user01',  #  mot de passe PostgreSQL
-        'HOST': 'localhost',  
-        'PORT': '5432', 
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'hrplatform_db',  # le nom de  base de données
+    #     'USER': 'postgres',  #  nom d'utilisateur PostgreSQL
+    #     'PASSWORD': 'user01',  #  mot de passe PostgreSQL
+    #     'HOST': 'localhost',  
+    #     'PORT': '5432', 
+    # }
 }
 
 
