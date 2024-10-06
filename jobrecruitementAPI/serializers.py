@@ -78,7 +78,7 @@ class PlatformUserSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        # Handle password and unique_id creation
+        # Handle unique_id creation
         year = datetime.now().year  # Get current year (YYYY)
         random_digits = str(random.randint(10000, 99999))  # Generate a random 5-digit number
         unique_id = f"EI{year}{random_digits}"  # Combine the parts
