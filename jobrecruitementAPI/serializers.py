@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import PlatformUser, Skill, Education, Experience, DesiredJob
 import uuid
 from rest_framework_simplejwt.tokens import RefreshToken
+import random
+from datetime import datetime
 
 class BlacklistTokenSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()
@@ -77,7 +79,10 @@ class PlatformUserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # Handle password and unique_id creation
-        validated_data['unique_id'] = str(uuid.uuid4())[:11]  # Generates a unique ID (first 11 characters of UUID)
+        year = datetime.now().year  # Get current year (YYYY)
+        random_digits = str(random.randint(10000, 99999))  # Generate a random 5-digit number
+        unique_id = f"EI{year}{random_digits}"  # Combine the parts
+        validated_data['unique_id'] = unique_id  # Generates a unique ID (first 11 characters of UUID)
         password = validated_data.pop('password')
         
         # Extract related data for nested serializers
