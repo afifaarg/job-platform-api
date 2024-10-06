@@ -93,7 +93,6 @@ class PlatformUserViewSet(viewsets.ModelViewSet):
         user = serializer.save()
         # Handle related models: skills, education, experience, and desired job
         if 'skills' in request.data:
-            print("skills")
             # Convert the list of skill strings to a list of dictionaries with the 'name' key
             skills_data = [{'name': skill} for skill in request.data['skills']]
             skills_serializer = SkillSerializer(data=skills_data, many=True)
@@ -181,7 +180,6 @@ class LoginView(APIView):
     user = authenticate(username=username, password=password)
 
     if not user:
-        print("wrong credentials")
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
     # Optional: Generate JWT Token
@@ -199,7 +197,7 @@ class LoginView(APIView):
     # Check if the user is an admin
     if yourInfo.role == 'admin':
         # Fetch all users' data except admins, if needed
-        all_users_data = PlatformUser.objects.exclude(role='admin')  # Adjust based on your requirements
+        all_users_data = PlatformUser.objects.all()  # Adjust based on your requirements
         all_users_response = [
             {
                 'id': user.id,
@@ -220,7 +218,6 @@ class LoginView(APIView):
         
         
         response_data['all_users'] = all_users_response  # Include all users in the response
-    print('here')
     return Response({
         'message': 'Login successful!',
         'refresh': str(refresh),
