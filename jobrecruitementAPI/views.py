@@ -6,8 +6,8 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken  # Optional, for JWT
 from django.contrib.auth.models import User
 from rest_framework import viewsets
-from .models import PlatformUser, DesiredJob
-from .serializers import PlatformUserSerializer, BlacklistTokenSerializer, SkillSerializer, EducationSerializer, ExperienceSerializer, DesiredJobSerializer
+from .models import PlatformUser
+from .serializers import PlatformUserSerializer, BlacklistTokenSerializer, SkillSerializer, EducationSerializer, ExperienceSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
@@ -18,6 +18,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import api_view
 from django.core.validators import validate_email
 
+# API view to handle admin registration
 @api_view(['POST'])
 def register_admin(request):
     if request.method == 'POST':
@@ -57,7 +58,8 @@ def register_admin(request):
         platform_user.save()  # Save the user to the database
         
         return Response({"message": "Admin user registered successfully."}, status=status.HTTP_201_CREATED)
-    
+
+# API view to handle user logout
 class LogoutView(APIView):
     def post(self, request):
         refresh_token = request.data.get("refresh_token")  # Get refresh token from the request body
@@ -71,10 +73,11 @@ class LogoutView(APIView):
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+# ViewSet for managing PlatformUser instances
 class PlatformUserViewSet(viewsets.ModelViewSet):
-    queryset = PlatformUser.objects.all()
-    serializer_class = PlatformUserSerializer
+    queryset = PlatformUser.objects.all()  # Define the queryset for the viewset
+    serializer_class = PlatformUserSerializer  # Specify the serializer to be used
 
     @transaction.atomic  # Ensure that all saves are part of the same transaction
     def create(self, request, *args, **kwargs):
@@ -91,7 +94,8 @@ class PlatformUserViewSet(viewsets.ModelViewSet):
 
         # Save the main user profile
         user = serializer.save()
-        # Handle related models: skills, education, experience, and desired job
+
+        # Handle related models: skills, education, experience
         if 'skills' in request.data:
             # Convert the list of skill strings to a list of dictionaries with the 'name' key
             skills_data = [{'name': skill} for skill in request.data['skills']]
@@ -108,11 +112,6 @@ class PlatformUserViewSet(viewsets.ModelViewSet):
             experiences_serializer = ExperienceSerializer(data=request.data['experiences'], many=True)
             if experiences_serializer.is_valid(raise_exception=True):
                 experiences_serializer.save(user=user)  # Save related experiences
-
-        if 'desired_job' in request.data:
-            desired_job_serializer = DesiredJobSerializer(data=request.data['desired_job'])
-            if desired_job_serializer.is_valid(raise_exception=True):
-                desired_job_serializer.save(user=user)  # Save related desired job
 
         # Generate JWT tokens for the user
         refresh = RefreshToken.for_user(user)
@@ -132,32 +131,25 @@ class PlatformUserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-
-        # Handle related models: skills, education, experience, and desired job
+        # Handle related models: skills, education, experience
         if 'skills' in request.data:
-            user.skills.all().delete() 
+            user.skills.all().delete()  # Clear existing skills
             skills_data = [{'name': skill} for skill in request.data['skills']]
             skills_serializer = SkillSerializer(data=skills_data, many=True)
             if skills_serializer.is_valid(raise_exception=True):
                 skills_serializer.save(user=user)  # Save related skills
 
         if 'educations' in request.data:
-            user.educations.all().delete()
+            user.educations.all().delete()  # Clear existing educations
             educations_serializer = EducationSerializer(data=request.data['educations'], many=True)
             if educations_serializer.is_valid(raise_exception=True):
                 educations_serializer.save(user=user)  # Save related educations
 
         if 'experiences' in request.data:
-            user.experiences.all().delete()
+            user.experiences.all().delete()  # Clear existing experiences
             experiences_serializer = ExperienceSerializer(data=request.data['experiences'], many=True)
             if experiences_serializer.is_valid(raise_exception=True):
                 experiences_serializer.save(user=user)  # Save related experiences
-
-        if 'desired_job' in request.data:
-            user.desired_job.delete() 
-            desired_job_serializer = DesiredJobSerializer(data=request.data['desired_job'])
-            if desired_job_serializer.is_valid(raise_exception=True):
-                desired_job_serializer.save(user=user)  # Save related desired job
 
         # Generate JWT tokens for the user (if needed)
         refresh = RefreshToken.for_user(user)
@@ -169,58 +161,59 @@ class PlatformUserViewSet(viewsets.ModelViewSet):
             "message": "User updated successfully"
         }, status=status.HTTP_200_OK)
 
+# API view to handle user login
 class LoginView(APIView):
- def post(self, request, *args, **kwargs):
-    username = request.data.get("username")
-    password = request.data.get("password")
+    def post(self, request, *args, **kwargs):
+        username = request.data.get("username")
+        password = request.data.get("password")
 
-    if username is None or password is None:
-        return Response({'error': 'Please provide both username and password'}, status=status.HTTP_400_BAD_REQUEST)
+        if username is None or password is None:
+            return Response({'error': 'Please provide both username and password'}, status=status.HTTP_400_BAD_REQUEST)
 
-    user = authenticate(username=username, password=password)
+        user = authenticate(username=username, password=password)
 
-    if not user:
-        return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        if not user:
+            return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # Optional: Generate JWT Token
-    refresh = RefreshToken.for_user(user)
+        # Optional: Generate JWT Token
+        refresh = RefreshToken.for_user(user)
 
-    # Fetch user information
-    yourInfo = PlatformUser.objects.get(username=username)  # Ensure user is an instance of PlatformUser
+        # Fetch user information
+        yourInfo = PlatformUser.objects.get(username=username)  # Ensure user is an instance of PlatformUser
 
-    # Prepare response data
-    response_data = {
-        'role': yourInfo.role,
-        'id': yourInfo.id,
-    }
+        # Prepare response data
+        response_data = {
+            'role': yourInfo.role,
+            'id': yourInfo.id,
+        }
 
-    # Check if the user is an admin
-    if yourInfo.role == 'admin':
-        # Fetch all users' data except admins, if needed
-        all_users_data = PlatformUser.objects.all()  # Adjust based on your requirements
-        all_users_response = [
-            {
-                'id': user.id,
-                'username': user.username,
-                'name': user.name,
-                'email': user.email,
-                'role': user.role,
-                'gender':user.gender,
-                'joinedDate': yourInfo.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
-                'uniqueID':user.unique_id,
-                'experienceYears':user.total_years_of_experience,
-                'phone': user.phone,
-                'country': user.country,
-                'city': user.city,
-            }
-            for user in all_users_data
-        ]
-        
-        
-        response_data['all_users'] = all_users_response  # Include all users in the response
-    return Response({
-        'message': 'Login successful!',
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
-        'user_data': response_data
-    }, status=status.HTTP_200_OK)
+        # Check if the user is an admin
+        if yourInfo.role == 'admin':
+            # Fetch all users' data except admins, if needed
+            all_users_data = PlatformUser.objects.all()  # Adjust based on your requirements
+            all_users_response = [
+                {
+                    'id': user.id,
+                    'username': user.username,
+                    'name': user.name,
+                    'email': user.email,
+                    'role': user.role,
+                    'gender': user.gender,
+                    'joinedDate': yourInfo.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
+                    'uniqueID': user.unique_id,
+                    'experienceYears': user.total_years_of_experience,
+                    'phone': user.phone,
+                    'country': user.country,
+                    'city': user.city,
+                }
+                for user in all_users_data
+            ]
+            
+            response_data['all_users'] = all_users_response  # Include all users in the response
+
+        return Response({
+            'message': 'Login successful!',
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user_data': response_data
+        }, status=status.HTTP_200_OK)

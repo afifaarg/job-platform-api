@@ -59,20 +59,6 @@ class PlatformUser(User):
             years = (end_date - experience.start_date).days / 365.25  # accounting for leap years
             total_years += years
         return round(total_years, 0)  # Round to 2 decimal places
-    
-class DesiredJob(models.Model):
-    user = models.ForeignKey(PlatformUser, on_delete=models.CASCADE, related_name="desired_job", default=None, blank=True, null=True)
-    job_title = models.CharField(max_length=150)
-    description = models.TextField(blank=True, null=True)
-    salary_expectation = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
-    job_location = models.CharField(max_length=150, blank=True, null=True, default="")
-    
-    contract_type = models.CharField(max_length=20, choices=CONTRACT_CHOICES, blank=True, null=True, default="cdi")
-    job_type = models.CharField(max_length=20, choices=JOBTYPE_CHOICES, blank=True, null=True, default="fulltime")
-    work_preference = models.CharField(max_length=20, choices=WORK_PREFERENCE_CHOICES, blank=True, null=True, default="on_site")
-    
-    def __str__(self):
-        return self.job_title
 
 class Skill(models.Model):
     user = models.ForeignKey(PlatformUser, on_delete=models.CASCADE, related_name="skills")
