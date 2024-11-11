@@ -76,46 +76,18 @@ class LogoutView(APIView):
 
 # ViewSet for managing PlatformUser instances
 class PlatformUserViewSet(viewsets.ModelViewSet):
-    queryset = PlatformUser.objects.all()  # Define the queryset for the viewset
-    serializer_class = PlatformUserSerializer  # Specify the serializer to be used
+    queryset = PlatformUser.objects.all()
+    serializer_class = PlatformUserSerializer
 
-    @transaction.atomic  # Ensure that all saves are part of the same transaction
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        serializer.is_valid(raise_exception=True) 
-        # Ensure required fields are present
-        if not all([
-            'username' in request.data,
-            'password' in request.data,
-            'name' in request.data,
-        ]):
-            return Response({'error': 'Missing required fields: username, password, name'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Save the main user profile
         user = serializer.save()
 
-        # Handle related models: skills, education, experience
-        if 'skills' in request.data:
-            # Convert the list of skill strings to a list of dictionaries with the 'name' key
-            skills_data = [{'name': skill} for skill in request.data['skills']]
-            skills_serializer = SkillSerializer(data=skills_data, many=True)
-            if skills_serializer.is_valid(raise_exception=True):
-                skills_serializer.save(user=user)  # Save related skills
-
-        if 'educations' in request.data:
-            educations_serializer = EducationSerializer(data=request.data['educations'], many=True)
-            if educations_serializer.is_valid(raise_exception=True):
-                educations_serializer.save(user=user)  # Save related educations
-
-        if 'experiences' in request.data:
-            experiences_serializer = ExperienceSerializer(data=request.data['experiences'], many=True)
-            if experiences_serializer.is_valid(raise_exception=True):
-                experiences_serializer.save(user=user)  # Save related experiences
-
-        # Generate JWT tokens for the user
         refresh = RefreshToken.for_user(user)
-        
+
         return Response({
             "user": PlatformUserSerializer(user).data,
             "refresh_token": str(refresh),
@@ -123,35 +95,13 @@ class PlatformUserViewSet(viewsets.ModelViewSet):
             "message": "User registered successfully"
         }, status=status.HTTP_201_CREATED)
 
-    @transaction.atomic  # Ensure that all saves are part of the same transaction
+    @transaction.atomic
     def update(self, request, *args, **kwargs):
-        instance = self.get_object()  # Get the current user instance
+        instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
-
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-        # Handle related models: skills, education, experience
-        if 'skills' in request.data:
-            user.skills.all().delete()  # Clear existing skills
-            skills_data = [{'name': skill} for skill in request.data['skills']]
-            skills_serializer = SkillSerializer(data=skills_data, many=True)
-            if skills_serializer.is_valid(raise_exception=True):
-                skills_serializer.save(user=user)  # Save related skills
-
-        if 'educations' in request.data:
-            user.educations.all().delete()  # Clear existing educations
-            educations_serializer = EducationSerializer(data=request.data['educations'], many=True)
-            if educations_serializer.is_valid(raise_exception=True):
-                educations_serializer.save(user=user)  # Save related educations
-
-        if 'experiences' in request.data:
-            user.experiences.all().delete()  # Clear existing experiences
-            experiences_serializer = ExperienceSerializer(data=request.data['experiences'], many=True)
-            if experiences_serializer.is_valid(raise_exception=True):
-                experiences_serializer.save(user=user)  # Save related experiences
-
-        # Generate JWT tokens for the user (if needed)
         refresh = RefreshToken.for_user(user)
 
         return Response({
@@ -160,7 +110,6 @@ class PlatformUserViewSet(viewsets.ModelViewSet):
             "access_token": str(refresh.access_token),
             "message": "User updated successfully"
         }, status=status.HTTP_200_OK)
-
 # API view to handle user login
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
@@ -186,7 +135,7 @@ class LoginView(APIView):
             'role': yourInfo.role,
             'id': yourInfo.id,
         }
-
+        
         # Check if the user is an admin
         if yourInfo.role == 'admin':
             # Fetch all users' data except admins, if needed
