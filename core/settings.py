@@ -10,14 +10,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-# SECRET_KEY = os.getenv('SECRET_KEY')
-SECRET_KEY = '5898998798s797s987s9'
+SECRET_KEY = os.getenv('SECRET_KEY')
+# SECRET_KEY = '5898998798s797s987s9'
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = os.getenv('DEBUG', 'False').lower() == "true"
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() == "true"
+# DEBUG = True
 # Allowed hosts, fetched from environment variables
-# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(' ')
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(' ')
+# ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
