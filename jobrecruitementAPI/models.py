@@ -33,12 +33,6 @@ class PlatformUser(User):
     unique_id = models.CharField(max_length=11, unique=True, null=True, blank=True)
     name = models.CharField(max_length=150)
     phone = models.CharField(max_length=150, default="", null=True, blank=True)
-    current_address = models.TextField(default="", null=True, blank=True)
-    permanent_address = models.TextField(default="", null=True, blank=True)
-    city = models.CharField(max_length=250, default="", null=True, blank=True)
-    state = models.CharField(max_length=250, default="", null=True, blank=True)
-    country = models.CharField(max_length=250, default="", null=True, blank=True)
-    pin_code = models.CharField(max_length=20, default="", null=True, blank=True)
     profile_pic = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
     gender = models.CharField(max_length=30, choices=GENDER_CHOICES, default="", null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
@@ -64,6 +58,24 @@ class PlatformUser(User):
             total_years += years
         return round(total_years, 0)
 
+class Address(models.Model):
+    ADDRESS_TYPE_CHOICES = [
+        ('current', 'Current'),
+        ('permanent', 'Permanent'),
+    ]
+    
+    user = models.ForeignKey('PlatformUser', on_delete=models.CASCADE, related_name='addresses')
+    address_line1 = models.TextField(default="", null=True, blank=True)
+    address_line2 = models.TextField(default="", null=True, blank=True)
+    city = models.CharField(max_length=250, default="", null=True, blank=True)
+    state = models.CharField(max_length=250, default="", null=True, blank=True)
+    country = models.CharField(max_length=250, default="", null=True, blank=True)
+    pin_code = models.CharField(max_length=20, default="", null=True, blank=True)
+    address_type = models.CharField(max_length=10, choices=ADDRESS_TYPE_CHOICES, default='current')
+
+    def __str__(self):
+        return f"{self.user.name} - {self.address_type}"
+    
 class Skill(models.Model):
     user = models.ForeignKey(PlatformUser, on_delete=models.CASCADE, related_name="skills")
     name = models.CharField(max_length=100)

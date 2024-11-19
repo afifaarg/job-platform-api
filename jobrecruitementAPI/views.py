@@ -152,8 +152,6 @@ class LoginView(APIView):
                     'uniqueID': user.unique_id,
                     'experienceYears': user.total_years_of_experience,
                     'phone': user.phone,
-                    'country': user.country,
-                    'city': user.city,
                 }
                 for user in all_users_data
             ]
