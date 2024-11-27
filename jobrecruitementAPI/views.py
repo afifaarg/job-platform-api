@@ -135,28 +135,6 @@ class LoginView(APIView):
             'role': yourInfo.role,
             'id': yourInfo.id,
         }
-        
-        # Check if the user is an admin
-        if yourInfo.role == 'admin':
-            # Fetch all users' data except admins, if needed
-            all_users_data = PlatformUser.objects.all()  # Adjust based on your requirements
-            all_users_response = [
-                {
-                    'id': user.id,
-                    'username': user.username,
-                    'name': user.name,
-                    'email': user.email,
-                    'role': user.role,
-                    'gender': user.gender,
-                    'joinedDate': yourInfo.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
-                    'uniqueID': user.unique_id,
-                    'experienceYears': user.total_years_of_experience,
-                    'phone': user.phone,
-                }
-                for user in all_users_data
-            ]
-            
-            response_data['all_users'] = all_users_response  # Include all users in the response
 
         return Response({
             'message': 'Login successful!',
@@ -164,3 +142,28 @@ class LoginView(APIView):
             'access': str(refresh.access_token),
             'user_data': response_data
         }, status=status.HTTP_200_OK)
+
+class fetchUsers(APIView):
+    def post(self, request, *args, **kwargs):
+        response_data = {}
+        all_users_data = PlatformUser.objects.all()  # Adjust based on your requirements
+        all_users_response = [
+            {
+                'id': user.id,
+                'username': user.username,
+                'name': user.name,
+                'email': user.email,
+                'role': user.role,
+                'gender': user.gender,
+                'joinedDate': user.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
+                'uniqueID': user.unique_id,
+                'experienceYears': user.total_years_of_experience,
+                'phone': user.phone,
+            }
+            for user in all_users_data
+        ]
+        response_data['all_users'] = all_users_response  # Include all users in the response
+        return Response({
+            'message': 'FETCH successful!',
+            'user_data': response_data
+        }, status=status.HTTP_200_OK)    
