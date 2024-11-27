@@ -8,7 +8,7 @@ router.register('users', PlatformUserViewSet, basename='users')
 urlpatterns = [
     path('', include(router.urls)),  # Include the router's URLs
     path('login/', LoginView.as_view(), name='login'),
-    path('fetchUsersList/', fetchUsers.as_view(), name='fetch-users'),
+    path('fetchUsersList/', FetchUsers.as_view(), name='fetch-users'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('registerAdmin/', register_admin, name='registerAdmin'),
 ]
