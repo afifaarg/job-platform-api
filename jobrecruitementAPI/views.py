@@ -148,7 +148,7 @@ class FetchUsers(APIView):
         try:
             # Fetch all users
             all_users_data = PlatformUser.objects.all()
-            
+
             # Construct the response data
             all_users_response = [
                 {
@@ -170,9 +170,11 @@ class FetchUsers(APIView):
                 'message': 'FETCH successful!',
                 'all_users': all_users_response
             }, status=status.HTTP_200_OK)
-        
+
         except Exception as e:
-            return Response({
+            response = JsonResponse({
                 'message': 'An error occurred while fetching users.',
                 'error': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            response["Access-Control-Allow-Origin"] = "https://job-platform-7pt0.onrender.com"
+            return response
