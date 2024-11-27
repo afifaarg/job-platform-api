@@ -113,7 +113,9 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS (Cross-Origin Resource Sharing)
-CORS_ALLOW_ALL_ORIGINS = True  # Set to False for production
+CORS_ALLOWED_ORIGINS = [
+    "https://job-platform-7pt0.onrender.com",
+]# Set to False for production
 
 # Security settings
 SECURE_BROWSER_XSS_FILTER = True
