@@ -143,27 +143,36 @@ class LoginView(APIView):
             'user_data': response_data
         }, status=status.HTTP_200_OK)
 
-class fetchUsers(APIView):
-    def post(self, request, *args, **kwargs):
-        response_data = {}
-        all_users_data = PlatformUser.objects.all()  # Adjust based on your requirements
-        all_users_response = [
-            {
-                'id': user.id,
-                'username': user.username,
-                'name': user.name,
-                'email': user.email,
-                'role': user.role,
-                'gender': user.gender,
-                'joinedDate': user.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
-                'uniqueID': user.unique_id,
-                'experienceYears': user.total_years_of_experience,
-                'phone': user.phone,
-            }
-            for user in all_users_data
-        ]
-        response_data['all_users'] = all_users_response  # Include all users in the response
-        return Response({
-            'message': 'FETCH successful!',
-            'user_data': response_data
-        }, status=status.HTTP_200_OK)    
+class FetchUsers(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            # Fetch all users
+            all_users_data = PlatformUser.objects.all()
+            
+            # Construct the response data
+            all_users_response = [
+                {
+                    'id': user.id,
+                    'username': user.username,
+                    'name': user.name,
+                    'email': user.email,
+                    'role': user.role,
+                    'gender': user.gender,
+                    'joinedDate': user.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
+                    'uniqueID': user.unique_id,
+                    'experienceYears': user.total_years_of_experience,
+                    'phone': user.phone,
+                }
+                for user in all_users_data
+            ]
+
+            return Response({
+                'message': 'FETCH successful!',
+                'all_users': all_users_response
+            }, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response({
+                'message': 'An error occurred while fetching users.',
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
